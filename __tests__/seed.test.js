@@ -1,6 +1,7 @@
 const db = require('../db/connection');
 const seed = require('../db/seeds/seed');
 const data = require('../db/data/test-data/index');
+const { createRef } = require('../db/seeds/utils');
 
 beforeAll(() => seed(data));
 afterAll(() => db.end());
@@ -598,4 +599,48 @@ describe('data insertion', () => {
   });
 });
 
-
+describe('Name of the group', () => {
+  test('should return an empty object when passed an empty array',() => {
+    const input = []
+    const result = createRef(input)
+    expect(result).toEqual({})
+  })
+  test('should return a ref object with a single key and value when passed an array containing a single article object',() => {
+    const input =[{
+      article_id: 6,
+      title: 'A',
+      topic: 'mitch',
+      author: 'icellusedkars',
+      body: 'Delicious tin of cat food',
+      created_at: '2020-10-18T01:00:00.000Z',
+      votes: 0,
+      article_img_url: 'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700'
+    }]
+    const result = createRef(input)
+    expect(result).toEqual({'A': 6})
+  })
+  test('should return a ref object with multiple keys and values when passed an array containing multiple articles',() => {
+    const input = [{
+      article_id: 6,
+      title: 'A',
+      topic: 'mitch',
+      author: 'icellusedkars',
+      body: 'Delicious tin of cat food',
+      created_at: '2020-10-18T01:00:00.000Z',
+      votes: 0,
+      article_img_url: 'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700'
+    },
+    {
+      article_id: 7,
+      title: 'Z',
+      topic: 'mitch',
+      author: 'icellusedkars',
+      body: 'I was hungry.',
+      created_at: '2020-01-07T14:08:00.000Z',
+      votes: 0,
+      article_img_url: 'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700'
+    }]
+    const result = createRef(input)
+    expect(result).toEqual({'A': 6, 'Z': 7})
+  })
+})

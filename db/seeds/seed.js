@@ -1,6 +1,6 @@
 const db = require("../connection");
 const format = require("pg-format");
-const { convertTimestampToDate } = require("./utils");
+const { convertTimestampToDate, createRef } = require("./utils");
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db
     .query(`DROP TABLE IF EXISTS comments, articles, users, topics`)
@@ -8,8 +8,8 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
       return db.query(
         `CREATE TABLE topics(
           slug VARCHAR PRIMARY KEY,
-          description TEXT NOT NULL,
-          img_url TEXT
+          description VARCHAR NOT NULL,
+          img_url VARCHAR(1000)
         );`
       );
     })
@@ -18,20 +18,20 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         CREATE TABLE users(
           username VARCHAR UNIQUE PRIMARY KEY,
           name VARCHAR NOT NULL,
-          avatar_url TEXT
+          avatar_url VARCHAR(1000)
         );`);
     })
     .then(() => {
       return db.query(`
         CREATE TABLE articles(
           article_id SERIAL PRIMARY KEY,
-          title TEXT NOT NULL,
+          title VARCHAR NOT NULL,
           topic VARCHAR NOT NULL REFERENCES topics(slug),
           author VARCHAR NOT NULL REFERENCES users(username),
           body TEXT NOT NULL,
-          created_at TIMESTAMP DEFAULT NOW(),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           votes INT DEFAULT 0,
-          article_img_url TEXT
+          article_img_url VARCHAR(1000)
         );`);
     })
     .then(() => {
@@ -42,9 +42,8 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
           body TEXT NOT NULL,
           votes INT DEFAULT 0,
           author VARCHAR NOT NULL REFERENCES users(username),
-          created_at TIMESTAMP DEFAULT NOW()
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );`);
-      // ^^ article_id should be not null? Why does comments data refer to article_title?
     })
     .then(() => {
       const formattedTopics = topicData.map((topic) => {
@@ -91,22 +90,21 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
 
       return db.query(insertArticles);
     })
-    .then((articles) => {
-      console.log(articles.rows);
+    .then((result) => {
+      const articleRefObject = createRef(result.rows);
       const formattedComments = commentData.map((comment) => {
-        const converted = convertTimestampToDate(comment);
-        // console.log(converted);
+        const legitComment = convertTimestampToDate(comment);
         return [
-          converted.body,
-          converted.votes,
-          converted.author,
-          converted.article_id,
-          converted.created_at,
+          articleRefObject[comment.article_title],
+          legitComment.body,
+          legitComment.votes,
+          legitComment.author,
+          legitComment.created_at
         ];
       });
 
       const insertComments = format(
-        `INSERT INTO comments (body, votes, author, article_id, created_at) VALUES %L`,
+        `INSERT INTO comments (article_id, body, votes, author, created_at) VALUES %L`,
         formattedComments
       );
 
