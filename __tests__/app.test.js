@@ -43,7 +43,7 @@ describe("GET /api/topics", () => {
       })
     })
   })
-  test.skip("404: Responds a 404 error if given an incorrect path", () => {
+  test("404: Responds a 404 error if given an incorrect path", () => {
     return request(app)
     .get("/api/incorrectpath")
     .expect(404)

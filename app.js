@@ -8,14 +8,9 @@ app.get('/api', getApi)
 
 app.get('/api/topics', getTopics)
 
-// app.all('*', (req, res) => {
-//     res.status(404).json({ msg: "Path not found" });
-// });
-
-// app.use((err, req, res, next) => {
-
-//     res.status(404).send({msg: "Path not found"})
-// })
+app.all('/*splat', (req, res) => {
+    res.status(404).json({ msg: "Path not found" });
+});
 
 app.use((err, req, res, next) => {
 
