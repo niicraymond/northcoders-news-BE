@@ -43,12 +43,49 @@ describe("GET /api/topics", () => {
       })
     })
   })
-  test("404: Responds a 404 error if given an incorrect path", () => {
+  test("404: Responds with a 404 error if given an incorrect path", () => {
     return request(app)
     .get("/api/incorrectpath")
     .expect(404)
     .then((response) => {
       expect(response.body.msg).toBe("Path not found")
+    })
+  })
+})
+
+describe("GET /api/articles/:article_id", () => {
+  test("200: Responds with the correct article when given a path with an article id", () => {
+    return request(app)
+    .get('/api/articles/1')
+    .expect(200)
+    .then((response) => {
+      const article = response.body.article
+      expect(article).toMatchObject({
+        article_id: expect.any(Number),
+        title: expect.any(String),
+        topic: expect.any(String),
+        author: expect.any(String),
+        body: expect.any(String),
+        created_at: expect.any(String),
+        votes: expect.any(Number),
+        article_img_url: expect.any(String)
+      })
+    })
+  })
+  test("400: Responds with a 400 error if given an invalid id ", () => {
+    return request(app)
+    .get('/api/articles/notanumber')
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request")
+    })
+  })
+  test("404: responds with a 400 error if given a valid id that doesnt exist", () => {
+    return request(app)
+    .get('/api/articles/9999')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("Article not found")
     })
   })
 })
