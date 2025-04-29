@@ -4,7 +4,7 @@ const app = require("../app.js");
 const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index.js");
-require("jest-sorted")
+require("jest-sorted");
 /* Set up your test imports here */
 
 /* Set up your beforeEach & afterAll functions here */
@@ -80,7 +80,7 @@ describe("GET /api/articles/:article_id", () => {
         expect(response.body.msg).toBe("Bad Request");
       });
   });
-  test("404: responds with a 400 error if given a valid id that doesnt exist", () => {
+  test("404: responds with a 404 error if given a valid id that doesnt exist", () => {
     return request(app)
       .get("/api/articles/9999")
       .expect(404)
@@ -119,15 +119,61 @@ describe("GET /api/articles", () => {
       .then((response) => {
         const articles = response.body.articles;
         expect(articles.length).toBeGreaterThan(0);
-        expect(articles).toBeSortedBy("created_at", {descending:true});
+        expect(articles).toBeSortedBy("created_at", { descending: true });
       });
   });
   test("404: Responds with a 404 error if given an incorrect path", () => {
     return request(app)
-    .get("/api/invalidpath")
+      .get("/api/invalidpath")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Path not found");
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: Responds with an array of all comments from an article with the correct properties", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            body: expect.any(String),
+            votes: expect.any(Number),
+            author: expect.any(String),
+            created_at: expect.any(String),
+            article_id: 1,
+          });
+        });
+      });
+  });
+  test("200: Comments should be served with the most recent comments first", () => {
+    return request(app)
+    .get('/api/articles/1/comments')
+    .expect(200)
+    .then((response) => {
+      const comments = response.body.comments
+      expect(comments).toBeSortedBy("created_at", {descending: true})
+    })
+  });
+  test("400: Responds with a 400 error if given an invalid id", () => {
+    return request(app)
+    .get('/api/articles/invalidid/comments')
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request")
+    })
+  });
+  test("404: responds with a 404 error if given a valid id that doesnt exist", () => {
+    return request(app)
+    .get('/api/articles/9999/comments')
     .expect(404)
     .then((response) => {
-      expect(response.body.msg).toBe("Path not found")
+      expect(response.body.msg).toBe("Article comments not found")
     })
   });
 });
