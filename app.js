@@ -1,6 +1,6 @@
 const db = require('./db/connection')
 const express = require('express')
-const {getApi, getTopics, getArticleById} = require('./app/controllers/controller.js')
+const {getApi, getTopics, getArticleById, getArticles} = require('./app/controllers/controller.js')
 
 const app = express()
 
@@ -9,6 +9,8 @@ app.get('/api', getApi)
 app.get('/api/topics', getTopics)
 
 app.get('/api/articles/:article_id', getArticleById)
+
+app.get('/api/articles', getArticles)
 
 app.all('/*splat', (req, res) => {
     res.status(404).json({ msg: "Path not found" });
