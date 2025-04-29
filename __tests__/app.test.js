@@ -34,6 +34,7 @@ describe("GET /api/topics", () => {
       .expect(200)
       .then((response) => {
         const topics = response.body.topics;
+        expect(topics.length).toBeGreaterThan(0)
         expect(Array.isArray(topics)).toBe(true);
         topics.forEach((topic) => {
           expect(topic).toMatchObject({
@@ -77,7 +78,7 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/notanumber")
       .expect(400)
       .then((response) => {
-        expect(response.body.msg).toBe("Bad Request");
+        expect(response.body.msg).toBe("Bad request");
       });
   });
   test("404: responds with a 404 error if given a valid id that doesnt exist", () => {
@@ -165,7 +166,7 @@ describe("GET /api/articles/:article_id/comments", () => {
     .get('/api/articles/invalidid/comments')
     .expect(400)
     .then((response) => {
-      expect(response.body.msg).toBe("Bad Request")
+      expect(response.body.msg).toBe("Bad request")
     })
   });
   test("404: responds with a 404 error if given a valid id that doesnt exist", () => {
@@ -177,3 +178,59 @@ describe("GET /api/articles/:article_id/comments", () => {
     })
   });
 });
+
+describe("POST /api/articles/:article_id/comments",() => {
+  test("201: posts a comment to a specific article", () => {
+
+    const newComment = {
+      username: "butter_bridge",
+      body: "nicolescomment"
+    }
+
+    return request(app)
+    .post('/api/articles/1/comments')
+    .send(newComment)
+    .expect(201)
+    .then((response) => {
+      const comment = response.body.comment
+      expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          article_id: 1, 
+          body: "nicolescomment",
+          votes: expect.any(Number),
+          author: "butter_bridge",
+          created_at: expect.any(String)
+      })
+    })
+  })
+  test("404: responds with a 404 if given a valid id that doesnt exist", () => {
+
+    const newComment = {
+      username: "butter_bridge",
+      body: "nicolescomment"
+    }
+
+    return request(app)
+    .post('/api/articles/9999/comments')
+    .send(newComment)
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("Article not found")
+    })
+  })
+  test("400: responds with a 400 when given an invalid id", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "nicolescomment"
+    }
+
+    return request(app)
+    .post('/api/articles/invalidid/comments')
+    .send(newComment)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad request")
+    })
+
+  })
+})

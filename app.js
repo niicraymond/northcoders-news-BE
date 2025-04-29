@@ -1,8 +1,9 @@
 const db = require('./db/connection')
 const express = require('express')
-const {getApi, getTopics, getArticleById, getArticles,getCommentsByArticle}= require('./app/controllers/controller.js')
+const {getApi, getTopics, getArticleById, getArticles,getCommentsByArticle, postCommentOnArticle}= require('./app/controllers/controller.js')
 
 const app = express()
+app.use(express.json());
 
 app.get('/api', getApi)
 
@@ -14,6 +15,8 @@ app.get('/api/articles', getArticles)
 
 app.get('/api/articles/:article_id/comments', getCommentsByArticle)
 
+app.post('/api/articles/:article_id/comments', postCommentOnArticle)
+
 app.all('/*splat', (req, res) => {
     res.status(404).json({ msg: "Path not found" });
 });
@@ -21,8 +24,9 @@ app.all('/*splat', (req, res) => {
 app.use((err, req, res, next) => {
 
     if (err.code === '22P02'){
-        res.status(400).send({msg: "Bad Request"})
-    } else {
+        res.status(400).send({msg: "Bad request"})
+    }
+    else {
         next(err)
     }
 })

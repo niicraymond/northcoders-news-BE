@@ -4,6 +4,7 @@ const {
   selectArticleById,
   selectArticles,
   selectCommentsByArticle,
+  insertCommentOnArticle
 } = require("../models/model.js");
 
 exports.getApi = (req, res, next) => {
@@ -42,3 +43,12 @@ exports.getCommentsByArticle = (req, res, next) => {
   })
   .catch(next)
 };
+
+exports.postCommentOnArticle = (req, res, next) => {
+  const {article_id} = req.params
+  const {username, body} = req.body
+  insertCommentOnArticle(article_id, username, body).then((comment) => {
+    res.status(201).send({comment})
+  })
+  .catch(next)
+}
