@@ -62,15 +62,33 @@ exports.selectCommentsByArticle = (article_id) => {
 exports.insertCommentOnArticle = (article_id, username, body) => {
   return db
     .query(
-      `INSERT INTO comments (article_id, author, body) VALUES ($1, $2, $3) RETURNING *;`,[article_id, username, body]
+      `INSERT INTO comments (article_id, author, body) VALUES ($1, $2, $3) RETURNING *;`,
+      [article_id, username, body]
     )
     .then((result) => {
       return result.rows[0];
     })
     .catch((err) => {
-      if (err.code ==='23503') {
+      if (err.code === "23503") {
         return Promise.reject({ status: 404, msg: "Article not found" });
       }
-      return Promise.reject(err)
-    })
+      return Promise.reject(err);
+    });
+};
+
+exports.updateArticleVotes = (article_id, inc_votes) => {
+  return db
+    .query(
+      `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;`,[
+        inc_votes, article_id
+      ]
+    )
+    .then((result) => {
+
+      if(result.rows.length === 0){
+        return Promise.reject({status: 404, msg: "Article not found"})
+      }
+
+      return result.rows[0];
+    });
 };
