@@ -299,11 +299,33 @@ describe("PATCH /api/articles/:article_id", () => {
       });
   });
   test("400: responds with a 400 if inc_votes is not a number", () => {
-    const votesObject = { inc_votes: 'notanumber' };
+    const votesObject = { inc_votes: "notanumber" };
 
     return request(app)
       .patch("/api/articles/1")
       .send(votesObject)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+});
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: delete the given comment by comment_id", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+  test("404: responds with a 404 if given a valid id that doesnt exist", () => {
+    return request(app)
+      .delete("/api/comments/9999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Comment not found");
+      });
+  });
+  test("400: responds with a 400 when given an invalid id", () => {
+    return request(app)
+      .delete("/api/comments/invalidid")
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe("Bad request");
