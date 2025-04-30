@@ -6,6 +6,7 @@ const {
   selectCommentsByArticle,
   insertCommentOnArticle,
   updateArticleVotes,
+  removeCommentById,
 } = require("../models/model.js");
 
 exports.getApi = (req, res, next) => {
@@ -62,6 +63,15 @@ exports.patchArticleVotes = (req, res, next) => {
   updateArticleVotes(article_id, inc_votes)
     .then((article) => {
       res.status(200).send({ article });
+    })
+    .catch(next);
+};
+
+exports.deleteComment = (req, res, next) => {
+  const { comment_id } = req.params;
+  removeCommentById(comment_id)
+    .then((comment) => {
+      res.status(204).end();
     })
     .catch(next);
 };
