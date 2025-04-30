@@ -113,7 +113,7 @@ describe("GET /api/articles", () => {
         });
       });
   });
-  test("200: responds with articles in decending ordr by default", () => {
+  test("200: responds with articles in decending order by default", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
@@ -123,6 +123,7 @@ describe("GET /api/articles", () => {
         expect(articles).toBeSortedBy("created_at", { descending: true });
       });
   });
+
   test("404: Responds with a 404 error if given an incorrect path", () => {
     return request(app)
       .get("/api/invalidpath")
@@ -131,6 +132,61 @@ describe("GET /api/articles", () => {
         expect(response.body.msg).toBe("Path not found");
       });
   });
+  describe.skip("/api/articles?sort_by=?&order=?", () => {
+    test("200: defaults to sorting by created_at in descending order when no queries are given", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeSortedBy("created_at", { descending: true });
+        });
+    });
+    test("200: sorts articles by column name when query params are given",() => {
+      return request(app)
+      .get("/api/articles?sort_by=title")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles
+        expect(articles).toBeSortedBy("title", {descending: true})
+      })
+    })
+    test("200: orders articles in acending order when parmas are given",() => {
+      return request(app)
+      .get("/api/articles?sort_by=author&order=asc")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles
+        expect(articles).toBeSortedBy("author", {ascending: true})
+      })
+    })
+    test("200: orders articles in descending order when parmas are given",() => {
+      return request(app)
+      .get("/api/articles?sort_by=author&order=desc")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles
+        expect(articles).toBeSortedBy("author", {descending: true})
+      })
+    })
+    test("400: returns 400 if given an invalid sort_by", () => {
+      return request(app)
+      .get("/api/articles?sort_by=invalidcolumn")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+    })
+    test("400: returns 400 if given an invalid order", () => {
+      return request(app)
+      .get("/api/articles?order=invalidorder")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+    })
+  })
+
 });
 
 describe("GET /api/articles/:article_id/comments", () => {

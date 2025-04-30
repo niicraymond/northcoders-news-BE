@@ -15,7 +15,7 @@ exports.getApi = (req, res, next) => {
 };
 
 exports.getTopics = (req, res, next) => {
-  selectTopics()
+  return selectTopics()
     .then((topics) => {
       res.status(200).send({ topics });
     })
@@ -24,7 +24,7 @@ exports.getTopics = (req, res, next) => {
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
-  selectArticleById(article_id)
+  return selectArticleById(article_id)
     .then((article) => {
       res.status(200).send({ article });
     })
@@ -32,7 +32,8 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  selectArticles()
+  const {order, sort_by} = req.query
+  return selectArticles(order, sort_by)
     .then((articles) => {
       res.status(200).send({ articles });
     })
@@ -41,7 +42,7 @@ exports.getArticles = (req, res, next) => {
 
 exports.getCommentsByArticle = (req, res, next) => {
   const { article_id } = req.params;
-  selectCommentsByArticle(article_id)
+  return selectCommentsByArticle(article_id)
     .then((comments) => {
       res.status(200).send({ comments });
     })
@@ -51,7 +52,7 @@ exports.getCommentsByArticle = (req, res, next) => {
 exports.postCommentOnArticle = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
-  insertCommentOnArticle(article_id, username, body)
+  return insertCommentOnArticle(article_id, username, body)
     .then((comment) => {
       res.status(201).send({ comment });
     })
@@ -61,7 +62,7 @@ exports.postCommentOnArticle = (req, res, next) => {
 exports.patchArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
-  updateArticleVotes(article_id, inc_votes)
+  return updateArticleVotes(article_id, inc_votes)
     .then((article) => {
       res.status(200).send({ article });
     })
@@ -70,7 +71,7 @@ exports.patchArticleVotes = (req, res, next) => {
 
 exports.deleteComment = (req, res, next) => {
   const { comment_id } = req.params;
-  removeCommentById(comment_id)
+  return removeCommentById(comment_id)
     .then((comment) => {
       res.status(204).end();
     })
@@ -78,7 +79,7 @@ exports.deleteComment = (req, res, next) => {
 };
 
 exports.getUsers = (req,res,next) => {
-  selectUsers().then((users) => {
+  return selectUsers().then((users) => {
     res.status(200).send({users})
   }).catch(next)
 }
