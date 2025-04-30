@@ -18,7 +18,7 @@ exports.selectArticleById = (article_id) => {
     });
 };
 
-exports.selectArticles = (order = "desc", sort_by = "created_at") => {
+exports.selectArticles = (order = "desc", sort_by = "created_at", topic) => {
   const validSortColumns = [
     "article_id",
     "title",
@@ -31,34 +31,45 @@ exports.selectArticles = (order = "desc", sort_by = "created_at") => {
     "comment_count",
   ];
   const validOrder = ["asc", "desc"];
- 
- 
+
   if (!validSortColumns.includes(sort_by) || !validOrder.includes(order)) {
     return Promise.reject({ status: 400, msg: "Bad request" });
   }
- 
- 
-  const queryStr = `
-  SELECT
-  articles.author,
-  articles.title,
-  articles.article_id,
-  articles.topic,
-  articles.created_at,
-  articles.votes,
-  articles.article_img_url,
-  COUNT(comments.comment_id)::INT AS comment_count
-  FROM articles
-  LEFT JOIN comments
-  ON comments.article_id = articles.article_id
-  GROUP BY articles.article_id
-  ORDER BY ${sort_by} ${order};`;
- 
- 
-  return db.query(queryStr).then((result) => {
+
+  const queryValues = [];
+  let queryStr = `
+    SELECT
+      articles.author,
+      articles.title,
+      articles.article_id,
+      articles.topic,
+      articles.created_at,
+      articles.votes,
+      articles.article_img_url,
+      COUNT(comments.comment_id)::INT AS comment_count
+    FROM articles
+    LEFT JOIN comments
+    ON comments.article_id = articles.article_id
+  `;
+
+  if (topic) {
+    queryValues.push(topic);
+    queryStr += ` WHERE articles.topic = $1`;
+  }
+
+  queryStr += `
+    GROUP BY articles.article_id
+    ORDER BY ${sort_by} ${order};
+  `;
+
+  return db.query(queryStr, queryValues).then((result) => {
+    if (topic && result.rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "Topic not found" });
+    }
     return result.rows;
   });
- };
+};
+
  
 
 exports.selectCommentsByArticle = (article_id) => {
