@@ -1,6 +1,6 @@
 const db = require('./db/connection')
 const express = require('express')
-const {getApi, getTopics, getArticleById, getArticles,getCommentsByArticle, postCommentOnArticle}= require('./app/controllers/controller.js')
+const {getApi, getTopics, getArticleById, getArticles,getCommentsByArticle, postCommentOnArticle, patchArticleVotes}= require('./app/controllers/controller.js')
 
 const app = express()
 app.use(express.json());
@@ -16,6 +16,8 @@ app.get('/api/articles', getArticles)
 app.get('/api/articles/:article_id/comments', getCommentsByArticle)
 
 app.post('/api/articles/:article_id/comments', postCommentOnArticle)
+
+app.patch('/api/articles/:article_id', patchArticleVotes)
 
 app.all('/*splat', (req, res) => {
     res.status(404).json({ msg: "Path not found" });
