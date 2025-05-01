@@ -1,26 +1,40 @@
-# NC News Seeding
+# NC News API
 
-## Set Up
+This is a RESTful API for a news application, built with Node.js, Express, and PostgreSQL. This API provides access to articles, topics, users, and comments, and supports all necessary CRUD operations.
 
-1. Clone the repo
-    - git clone https://github.com/niicraymond/northcoders-news-BE.git 
+Live API: https://northcoders-news-be-s4h6.onrender.com
 
-2. Install dependencies 
-    - npm install
+To run the project:
 
-3. Create the environment files:
+1. Clone the repository:
+git clone https://github.com/niicraymond/northcoders-news-BE.git
+cd northcoders-news-BE
 
-- .env.development
-    - PGDATABASE=nc_news
+2. Install dependencies:
+npm install
 
-- .env.test
-    - PGDATABASE=nc_news_test
+3. Create the environment files in the root of the project:
+
+.env.development  
+PGDATABASE=nc_news
+
+.env.test  
+PGDATABASE=nc_news_test
 
 4. Set up the databases:
-    - npm run setup-dbs
+npm run setup-dbs
 
 5. Seed the development database:
-    - NODE_ENV=development npm run seed-dev
+npm run seed-dev
 
-6. Run tests:
-    - npm test
+6. Seed the test database:
+npm run seed-test
+
+7. Run the test suite:
+npm test
+
+Minimum required versions:
+Node.js: v22.0.0  
+PostgreSQL: v14+
+
+- See the `/api` endpoint for full documentation.
