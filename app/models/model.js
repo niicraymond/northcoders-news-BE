@@ -8,7 +8,25 @@ exports.selectTopics = () => {
 
 exports.selectArticleById = (article_id) => {
   return db
-    .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
+    .query(
+      `
+      SELECT 
+        articles.article_id,
+        articles.title,
+        articles.body,
+        articles.votes,
+        articles.topic,
+        articles.author,
+        articles.created_at,
+        articles.article_img_url,
+        COUNT(comments.comment_id)::INT AS comment_count
+      FROM articles
+      LEFT JOIN comments 
+        ON comments.article_id = articles.article_id
+      WHERE articles.article_id = $1
+      GROUP BY articles.article_id`,
+      [article_id]
+    )
     .then((result) => {
       if (result.rows.length === 0) {
         return Promise.reject({ status: 404, msg: "Article not found" });
@@ -70,8 +88,6 @@ exports.selectArticles = (order = "desc", sort_by = "created_at", topic) => {
   });
 };
 
- 
-
 exports.selectCommentsByArticle = (article_id) => {
   return db
     .query(
@@ -109,14 +125,12 @@ exports.insertCommentOnArticle = (article_id, username, body) => {
 exports.updateArticleVotes = (article_id, inc_votes) => {
   return db
     .query(
-      `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;`,[
-        inc_votes, article_id
-      ]
+      `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;`,
+      [inc_votes, article_id]
     )
     .then((result) => {
-
-      if(result.rows.length === 0){
-        return Promise.reject({status: 404, msg: "Article not found"})
+      if (result.rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "Article not found" });
       }
 
       return result.rows[0];
@@ -124,15 +138,17 @@ exports.updateArticleVotes = (article_id, inc_votes) => {
 };
 
 exports.removeCommentById = (comment_id) => {
-  return db.query(`DELETE FROM comments WHERE comment_id = $1;`, [comment_id]).then((result) => {
-    if (result.rowCount === 0){
-      return Promise.reject({status: 404 ,msg:'Comment not found'})
-    }
-  })
-}
+  return db
+    .query(`DELETE FROM comments WHERE comment_id = $1;`, [comment_id])
+    .then((result) => {
+      if (result.rowCount === 0) {
+        return Promise.reject({ status: 404, msg: "Comment not found" });
+      }
+    });
+};
 
 exports.selectUsers = () => {
   return db.query(`SELECT * FROM users`).then((result) => {
-    return result.rows
-  })
-}
+    return result.rows;
+  });
+};
