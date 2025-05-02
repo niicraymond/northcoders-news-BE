@@ -7,7 +7,8 @@ const {
   insertCommentOnArticle,
   updateArticleVotes,
   removeCommentById,
-  selectUsers
+  selectUsers,
+  selectUsersByUsername
 } = require("../models/model.js");
 
 exports.getApi = (req, res, next) => {
@@ -81,5 +82,12 @@ exports.deleteComment = (req, res, next) => {
 exports.getUsers = (req,res,next) => {
   return selectUsers().then((users) => {
     res.status(200).send({users})
+  }).catch(next)
+}
+
+exports.getUsersByUsername = (req,res,next) => {
+  const {username} = req.params
+  return selectUsersByUsername(username).then((user) => {
+    res.status(200).send({user})
   }).catch(next)
 }
