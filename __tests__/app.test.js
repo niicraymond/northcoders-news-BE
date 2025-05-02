@@ -70,7 +70,7 @@ describe("GET /api/articles/:article_id", () => {
           votes: 100,
           article_img_url:
             "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-          comment_count: 11
+          comment_count: 11,
         });
       });
   });
@@ -133,84 +133,83 @@ describe("GET /api/articles", () => {
         expect(response.body.msg).toBe("Path not found");
       });
   });
-    describe("/api/articles?sort_by=?&order=?", () => {
-      test("200: defaults to sorting by created_at in descending order when no queries are given", () => {
-        return request(app)
-          .get("/api/articles")
-          .expect(200)
-          .then((response) => {
-            const articles = response.body.articles;
-            expect(articles).toBeSortedBy("created_at", { descending: true });
-          });
-      });
-      test("200: sorts articles by column name when query params are given", () => {
-        return request(app)
-          .get("/api/articles?sort_by=title")
-          .expect(200)
-          .then((response) => {
-            const articles = response.body.articles;
-            expect(articles).toBeSortedBy("title", { descending: true });
-          });
-      });
-      test("200: orders articles in acending order when parmas are given", () => {
-        return request(app)
-          .get("/api/articles?sort_by=author&order=asc")
-          .expect(200)
-          .then((response) => {
-            const articles = response.body.articles;
-            expect(articles).toBeSortedBy("author", { ascending: true });
-          });
-      });
-      test("200: orders articles in descending order when parmas are given", () => {
-        return request(app)
-          .get("/api/articles?sort_by=author&order=desc")
-          .expect(200)
-          .then((response) => {
-            const articles = response.body.articles;
-            expect(articles).toBeSortedBy("author", { descending: true });
-          });
-      });
-      test("400: returns 400 if given an invalid sort_by", () => {
-        return request(app)
-          .get("/api/articles?sort_by=invalidcolumn")
-          .expect(400)
-          .then((response) => {
-            expect(response.body.msg).toBe("Bad request");
-          });
-      });
-      test("400: returns 400 if given an invalid order", () => {
-        return request(app)
-          .get("/api/articles?order=invalidorder")
-          .expect(400)
-          .then((response) => {
-            expect(response.body.msg).toBe("Bad request");
-          });
-      });
+  describe("/api/articles?sort_by=?&order=?", () => {
+    test("200: defaults to sorting by created_at in descending order when no queries are given", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeSortedBy("created_at", { descending: true });
+        });
     });
-    describe("/api/articles?topic=?", () => {
-      test("200: filters articles by topic", () => {
-        return request(app)
-          .get("/api/articles?topic=mitch")
-          .expect(200)
-          .then((response) => {
-            const articles = response.body.articles;
-            expect(articles.length).toBeGreaterThan(0);
-            articles.forEach((article) => {
-              expect(article.topic).toBe("mitch");
-            });
-          });
-      });
-    
-      test("404: returns 404 if the topic does not exist", () => {
-        return request(app)
-          .get("/api/articles?topic=notarealtopic")
-          .expect(404)
-          .then((response) => {
-            expect(response.body.msg).toBe("Topic not found");
-          });
-      });
+    test("200: sorts articles by column name when query params are given", () => {
+      return request(app)
+        .get("/api/articles?sort_by=title")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeSortedBy("title", { descending: true });
+        });
     });
-    
+    test("200: orders articles in acending order when parmas are given", () => {
+      return request(app)
+        .get("/api/articles?sort_by=author&order=asc")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeSortedBy("author", { ascending: true });
+        });
+    });
+    test("200: orders articles in descending order when parmas are given", () => {
+      return request(app)
+        .get("/api/articles?sort_by=author&order=desc")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeSortedBy("author", { descending: true });
+        });
+    });
+    test("400: returns 400 if given an invalid sort_by", () => {
+      return request(app)
+        .get("/api/articles?sort_by=invalidcolumn")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Bad request");
+        });
+    });
+    test("400: returns 400 if given an invalid order", () => {
+      return request(app)
+        .get("/api/articles?order=invalidorder")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Bad request");
+        });
+    });
+  });
+  describe("/api/articles?topic=?", () => {
+    test("200: filters articles by topic", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles.length).toBeGreaterThan(0);
+          articles.forEach((article) => {
+            expect(article.topic).toBe("mitch");
+          });
+        });
+    });
+
+    test("404: returns 404 if the topic does not exist", () => {
+      return request(app)
+        .get("/api/articles?topic=notarealtopic")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("Topic not found");
+        });
+    });
+  });
 });
 
 describe("GET /api/articles/:article_id/comments", () => {
@@ -438,5 +437,30 @@ describe("GET /api/users", () => {
       .then((response) => {
         expect(response.body.msg).toBe("Path not found");
       });
+  });
+});
+
+describe("GET /api/users/:username", () => {
+  test("200: responds with a user object", () => {
+    return request(app)
+      .get("/api/users/butter_bridge")
+      .expect(200)
+      .then((response) => {
+        const user = response.body.user;
+        expect(user).toMatchObject({
+          username: "butter_bridge",
+          name: "jonny",
+          avatar_url:
+            "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+        });
+      });
+  });
+  test("404: responds with a 404 if given a username that doesnt exist", () => {
+    return request(app)
+    .get("/api/users/invalidusername")
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Username not found')
+    })
   });
 });
