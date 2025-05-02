@@ -464,3 +464,77 @@ describe("GET /api/users/:username", () => {
     })
   });
 });
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("200: updates a comment's vote count with a postive value", () => {
+    const votesObject = { inc_votes: 10 };
+    return request(app)
+    .patch('/api/comments/1')
+    .send(votesObject)
+    .expect(200)
+    .then((response) => {
+      const comment = response.body.comment
+      expect(comment).toMatchObject({
+        article_title: expect.any(String),
+        body: expect.any(String),
+        votes: 26,
+        author: expect.any(String),
+        created_at: expect.any(String),
+      })
+    })
+  });
+
+  test("200: updates a comment's vote count with a negative value", () => {
+    const votesObject = { inc_votes: -10 };
+    return request(app)
+    .patch('/api/comments/1')
+    .send(votesObject)
+    .expect(200)
+    .then((response) => {
+      const comment = response.body.comment
+      expect(comment).toMatchObject({
+        article_title: expect.any(String),
+        body: expect.any(String),
+        votes: 6,
+        author: expect.any(String),
+        created_at: expect.any(String),
+      })
+    })
+  });
+
+  test("400: returns 400 if comment_id is invalid", () => {
+    const votesObject = { inc_votes: 10 };
+
+    return request(app)
+      .patch("/api/comments/invalidid")
+      .send(votesObject)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+
+  test("400: responds with a 400 if inc_votes is not a number", () => {
+    const votesObject = { inc_votes: "invalid" };
+
+    return request(app)
+      .patch("/api/comments/1")
+      .send(votesObject)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("404: responds with a 404 if comment_id is valid but doesn't exist", () => {
+    const votesObject = { inc_votes: 1 };
+
+    return request(app)
+      .patch("/api/comments/999999")
+      .send(votesObject)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Comment not found");
+      });
+  });
+})
+  
