@@ -8,6 +8,16 @@ app.use(cors())
 
 app.use(express.json())
 
+app.get("/healthz", async (_req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    return res.status(200).send("OK");
+  } catch (err) {
+    console.error("healthz DB check failed:", err.message);
+    return res.status(500).send("DB error");
+  }
+});
+
 app.use("/api", apiRouter)
 
 app.all("/*splat", (req, res) => {
@@ -31,14 +41,5 @@ app.use((err, req, res, next) => {
   }
 });
 
-app.get("/healthz", async (_req, res) => {
-  try {
-    await pool.query("SELECT 1"); // touches Supabase
-    return res.status(200).send("OK");
-  } catch (err) {
-    console.error("healthz DB check failed:", err.message);
-    return res.status(500).send("DB error");
-  }
-});
 
 module.exports = app
