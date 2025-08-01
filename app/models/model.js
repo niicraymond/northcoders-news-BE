@@ -116,7 +116,12 @@ exports.insertCommentOnArticle = (article_id, username, body) => {
     })
     .catch((err) => {
       if (err.code === "23503") {
-        return Promise.reject({ status: 404, msg: "Article not found" });
+        if (err.constraint === "comments_article_id_fkey") {
+          return Promise.reject({ status: 404, msg: "Article not found" });
+        }
+        if (err.constraint === "comments_author_fkey") {
+          return Promise.reject({ status: 404, msg: "User not found" });
+        }
       }
       return Promise.reject(err);
     });
@@ -183,5 +188,27 @@ exports.updateCommentVotes = (comment_id, inc_votes) => {
         return Promise.reject({ status: 404, msg: "Comment not found" });
       }
       return result.rows[0];
+    });
+};
+
+exports.insertUserMinimal = ({ username, name, avatar_url }) => {
+  return db
+    .query(
+      `
+    INSERT INTO users (username, name, avatar_url)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (username) DO NOTHING
+    RETURNING username, name, avatar_url
+  `,
+      [username, name || username, avatar_url || null]
+    )
+    .then((result) => {
+      if (result.rows[0]) return result.rows[0];
+      return db
+        .query(
+          `SELECT username, name, avatar_url FROM users WHERE username = $1`,
+          [username]
+        )
+        .then((r) => r.rows[0]);
     });
 };

@@ -8,7 +8,9 @@ const {
   updateArticleVotes,
   removeCommentById,
   selectUsers,
-  selectUsersByUsername, updateCommentVotes
+  selectUsersByUsername,
+  updateCommentVotes,
+  insertUserMinimal,
 } = require("../models/model.js");
 
 exports.getApi = (req, res, next) => {
@@ -33,7 +35,7 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  const {order, sort_by, topic} = req.query
+  const { order, sort_by, topic } = req.query;
   return selectArticles(order, sort_by, topic)
     .then((articles) => {
       res.status(200).send({ articles });
@@ -50,14 +52,23 @@ exports.getCommentsByArticle = (req, res, next) => {
     .catch(next);
 };
 
-exports.postCommentOnArticle = (req, res, next) => {
+exports.postCommentOnArticle = async (req, res, next) => {
   const { article_id } = req.params;
-  const { username, body } = req.body;
-  return insertCommentOnArticle(article_id, username, body)
-    .then((comment) => {
-      res.status(201).send({ comment });
-    })
-    .catch(next);
+  let { username, body } = req.body;
+
+  if (!username || typeof username !== "string" || username.trim() === "") {
+    return res.status(400).send({ msg: "username required" });
+  }
+
+  username = username.trim().slice(0, 30);
+
+  try {
+    await insertUserMinimal({ username, name: username });
+    const comment = await insertCommentOnArticle(article_id, username, body);
+    res.status(201).send({ comment });
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.patchArticleVotes = (req, res, next) => {
@@ -79,23 +90,29 @@ exports.deleteComment = (req, res, next) => {
     .catch(next);
 };
 
-exports.getUsers = (req,res,next) => {
-  return selectUsers().then((users) => {
-    res.status(200).send({users})
-  }).catch(next)
-}
+exports.getUsers = (req, res, next) => {
+  return selectUsers()
+    .then((users) => {
+      res.status(200).send({ users });
+    })
+    .catch(next);
+};
 
-exports.getUsersByUsername = (req,res,next) => {
-  const {username} = req.params
-  return selectUsersByUsername(username).then((user) => {
-    res.status(200).send({user})
-  }).catch(next)
-}
+exports.getUsersByUsername = (req, res, next) => {
+  const { username } = req.params;
+  return selectUsersByUsername(username)
+    .then((user) => {
+      res.status(200).send({ user });
+    })
+    .catch(next);
+};
 
 exports.patchCommentVotes = (req, res, next) => {
-  const {comment_id} = req.params
-  const {inc_votes} = req.body
-  return updateCommentVotes(comment_id, inc_votes).then((comment) => {
-    res.status(200).send({comment})
-  }).catch(next)
-}
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+  return updateCommentVotes(comment_id, inc_votes)
+    .then((comment) => {
+      res.status(200).send({ comment });
+    })
+    .catch(next);
+};
